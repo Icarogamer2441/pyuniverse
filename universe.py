@@ -1,7 +1,6 @@
 import pygame
 import sys
 import math
-import pdb
 
 pygame.init()
 
@@ -15,7 +14,7 @@ red = (255, 0, 0)
 blue = (0, 0, 255)
 
 G = 200
-drag_force_multiplier = 0.2
+drag_force_multiplier = 0.5
 mass_increase = 10
 black_hole_mass = 1000
 star_mass = 100  # Massa da estrela
@@ -35,7 +34,7 @@ def calculate_gravity(obj1, obj2):
 
 
 class CelestialBody:
-    def __init__(self, x, y, radius, color, mass=1):
+    def __init__(self, x, y, radius, color, mass=2):
         self.x = x
         self.y = y
         self.radius = radius
@@ -74,6 +73,31 @@ class CelestialBody:
         if other_body.mass > self.mass:
             celestial_bodies.remove(other_body)
 
+class TimeSystem:
+    def __init__(self):
+        self.days = 0
+        self.years = 0
+        self.months = 0
+        self.time_elapsed = 0
+        self.seconds_per_day = 0.7
+
+    def update(self, elapsed_time):
+        self.time_elapsed += elapsed_time
+
+        if self.time_elapsed >= self.seconds_per_day:
+            self.days += 1
+            self.time_elapsed = 0
+
+        if self.days >= 365:
+            self.days = 0
+            self.years += 1
+
+        if self.years >= 12:
+            self.years = 0
+            self.months += 1
+
+    def get_time_string(self):
+        return f"Years: {self.years}  Months: {self.months}  Days: {self.days}"
 
 # Tela inicial
 font = pygame.font.Font(None, 24)
@@ -119,6 +143,8 @@ pygame.display.flip()
 
 waiting_for_start = True
 
+time_system = TimeSystem()
+
 while waiting_for_start:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -143,6 +169,9 @@ scroll_speed = 5
 center_arrow_size = 10
 
 while True:
+    elapsed_time = clock.tick(60) / 1000.0  # Tempo em segundos desde a última iteração
+    time_system.update(elapsed_time)
+	
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -246,6 +275,10 @@ while True:
     if dragging:
         current_pos = pygame.mouse.get_pos()
         drag_force = (current_pos[0] - drag_start[0], current_pos[1] - drag_start[1])
+    
+    # Exibir o contador de tempo na tela
+    time_text = font.render(time_system.get_time_string(), True, white)
+    screen.blit(time_text, (10, 10))
     
     pygame.display.flip()
     clock.tick(60)
