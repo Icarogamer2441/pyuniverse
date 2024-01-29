@@ -116,9 +116,6 @@ dragging = False
 drag_start = (0, 0)
 drag_force = (0, 0)
 
-dragging_star = False
-star_drag_start = (0, 0)
-
 scroll_speed = 5
 center_arrow_size = 10
 
@@ -166,14 +163,6 @@ while True:
             elif event.key == pygame.K_DOWN:
                 for body in celestial_bodies:
                     body.y -= scroll_speed
-            elif event.key == pygame.K_s:
-                dragging_star = True
-                star_drag_start = pygame.mouse.get_pos()
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_s:
-                dragging_star = False
-                current_pos = pygame.mouse.get_pos()
-                star.apply_force((current_pos[0] - star_drag_start[0], current_pos[1] - star_drag_start[1]))
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT]:
@@ -220,11 +209,6 @@ while True:
     if dragging:
         current_pos = pygame.mouse.get_pos()
         drag_force = (current_pos[0] - drag_start[0], current_pos[1] - drag_start[1])
-
-    if dragging_star:
-        current_pos = pygame.mouse.get_pos()
-        star_drag_force = (current_pos[0] - star_drag_start[0], current_pos[1] - star_drag_start[1])
-        star.apply_force(star_drag_force)
 
     pygame.display.flip()
     clock.tick(60)
