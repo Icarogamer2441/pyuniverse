@@ -14,7 +14,7 @@ red = (255, 0, 0)
 blue = (0, 0, 255)
 
 G = 150
-drag_force_multiplier = 0.1
+drag_force_multiplier = 0.2
 mass_increase = 10
 black_hole_mass = 1000
 
@@ -74,7 +74,7 @@ class BlackHole:
 
 # Tela inicial
 font = pygame.font.Font(None, 24)
-text = font.render("Gravitational Attraction", True, white)
+text = font.render("PyUniverse", True, white)
 text_rect = text.get_rect(center=(width//2, height//2 - 100))
 
 info_text1 = font.render("Left click to create a planet", True, white)
@@ -133,6 +133,9 @@ dragging = False
 drag_start = (0, 0)
 drag_force = (0, 0)
 
+scroll_speed = 5
+center_arrow_size = 10
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -162,12 +165,63 @@ while True:
                 # Deleta todos os planetas e buracos negros
                 planets = []
                 black_holes = []
+            elif event.key == pygame.K_LEFT:
+                for planet in planets:
+                    planet.x += scroll_speed
+                for black_hole in black_holes:
+                    black_hole.x += scroll_speed
+            elif event.key == pygame.K_RIGHT:
+                for planet in planets:
+                    planet.x -= scroll_speed
+                for black_hole in black_holes:
+                    black_hole.x -= scroll_speed
+            elif event.key == pygame.K_UP:
+                for planet in planets:
+                    planet.y += scroll_speed
+                for black_hole in black_holes:
+                    black_hole.y += scroll_speed
+            elif event.key == pygame.K_DOWN:
+                for planet in planets:
+                    planet.y -= scroll_speed
+                for black_hole in black_holes:
+                    black_hole.y -= scroll_speed
 
-    if dragging:
-        drag_end = pygame.mouse.get_pos()
-        drag_force = (drag_end[0] - drag_start[0], drag_end[1] - drag_start[1])
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        for planet in planets:
+            planet.x += scroll_speed
+        for black_hole in black_holes:
+            black_hole.x += scroll_speed
+    if keys[pygame.K_RIGHT]:
+        for planet in planets:
+            planet.x -= scroll_speed
+        for black_hole in black_holes:
+            black_hole.x -= scroll_speed
+    if keys[pygame.K_UP]:
+        for planet in planets:
+            planet.y += scroll_speed
+        for black_hole in black_holes:
+            black_hole.y += scroll_speed
+    if keys[pygame.K_DOWN]:
+        for planet in planets:
+            planet.y -= scroll_speed
+        for black_hole in black_holes:
+            black_hole.y -= scroll_speed
 
     screen.fill(black)
+
+    center_x = sum(planet.x for planet in planets) / len(planets) if planets else width / 2
+    center_y = sum(planet.y for planet in planets) / len(planets) if planets else height / 2
+
+    if center_x != width / 2 or center_y != height / 2:
+        center_arrow_angle = math.atan2(height / 2 - center_y, width / 2 - center_x)
+        center_arrow_x = width / 2 + center_arrow_size * math.cos(center_arrow_angle)
+        center_arrow_y = height / 2 + center_arrow_size * math.sin(center_arrow_angle)
+
+        pygame.draw.line(screen, white, (width / 2, height / 2), (center_arrow_x, center_arrow_y), 2)
+        pygame.draw.polygon(screen, white, [(width / 2 - 5, height / 2 - 15),
+                                            (width / 2 + 5, height / 2 - 15),
+                                            (width / 2, height / 2 - 5)])
 
     for i in range(len(planets)):
         for j in range(len(black_holes)):
@@ -189,9 +243,6 @@ while True:
                     planets.pop(i)
                 break
 
-    for black_hole in black_holes:
-        black_hole.draw()
-    
     for i in range(len(black_holes)):
         for j in range(i+1, len(black_holes)):
             black_holes[i].apply_gravity(black_holes[j])
@@ -205,13 +256,20 @@ while True:
                     black_holes[j].mass += black_holes[i].mass
                     black_holes.pop(i)
                 break
-    
+
+    for black_hole in black_holes:
+        black_hole.draw()
+
     for planet in planets:
         planet.update()
         planet.draw()
 
     for planet in planets:
         pygame.draw.line(screen, red, (planet.x, planet.y), (planet.x + drag_force[0], planet.y + drag_force[1]), 3)
+
+    if dragging:
+        current_pos = pygame.mouse.get_pos()
+        drag_force = (current_pos[0] - drag_start[0], current_pos[1] - drag_start[1])
 
     pygame.display.flip()
     clock.tick(60)
