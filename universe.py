@@ -51,6 +51,16 @@ class CelestialBody:
 
     def increase_mass(self, amount):
         self.mass += amount
+    
+    def merge(self, other_body):
+        total_mass = self.mass + other_body.mass
+        weighted_avg_velocity_x = (self.mass * self.velocity[0] + other_body.mass * other_body.velocity[0]) / total_mass
+        weighted_avg_velocity_y = (self.mass * self.velocity[1] + other_body.mass * other_body.velocity[1]) / total_mass
+
+        self.mass = total_mass
+        self.velocity = [weighted_avg_velocity_x, weighted_avg_velocity_y]
+        self.mass += other_body.mass
+        self.radius += other_body.mass / 4
 
 # Tela inicial
 font = pygame.font.Font(None, 24)
@@ -192,7 +202,21 @@ while True:
         pygame.draw.polygon(screen, white, [(width / 2 - 5, height / 2 - 15),
                                             (width / 2 + 5, height / 2 - 15),
                                             (width / 2, height / 2 - 5)])
-
+    
+    for i in range(len(celestial_bodies)):
+        for j in range(len(celestial_bodies)):
+            if i != j and i < len(celestial_bodies) and j < len(celestial_bodies):
+                distance = math.hypot(celestial_bodies[j].x - celestial_bodies[i].x,
+                                  celestial_bodies[j].y - celestial_bodies[i].y)
+                if distance <= celestial_bodies[i].radius + celestial_bodies[j].radius:
+                    # Fusão de estrelas
+                    if celestial_bodies[i].mass > celestial_bodies[j].mass:
+                        celestial_bodies[i].merge(celestial_bodies[j])
+                        celestial_bodies.pop(j)
+                    else:
+                        celestial_bodies[j].merge(celestial_bodies[i])
+                        celestial_bodies.pop(i)
+    
     for i in range(len(celestial_bodies)):
         for j in range(len(celestial_bodies)):
             if i != j:
