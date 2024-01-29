@@ -13,7 +13,7 @@ black = (0, 0, 0)
 red = (255, 0, 0)
 blue = (0, 0, 255)
 
-G = 150
+G = 200
 drag_force_multiplier = 0.2
 mass_increase = 10
 black_hole_mass = 1000
