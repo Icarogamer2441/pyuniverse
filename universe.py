@@ -1,12 +1,19 @@
 import pygame
 import sys
 import math
+import tkinter as tk
+from tkinter import simpledialog
 
 pygame.init()
 
 width, height = 800, 600
 screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("PyUniverse")
+
+root = tk.Tk()
+root.withdraw()
+universe_name = simpledialog.askstring("Nome do Universo", "Digite o nome do seu universo:")
+
+pygame.display.set_caption(f"PyUniverse - {universe_name}")
 
 white = (255, 255, 255)
 black = (0, 0, 0)
@@ -159,6 +166,25 @@ screen.fill(black)
 pygame.display.flip()
 
 celestial_bodies = []  # Lista para armazenar planetas, estrelas e buracos negros
+
+star = CelestialBody(width // 2, height // 2, 50, red, star_mass)
+celestial_bodies.append(star)
+
+# Adicione a criação de 4 planetas girando ao redor da estrela com velocidades angulares mais altas
+num_planets = 4
+angular_speed_factor = 10  # Ajuste conforme desejado para aumentar a velocidade angular
+for i in range(num_planets):
+    angle = (2 * math.pi / num_planets) * i
+    distance_from_star = 150  # Ajuste conforme desejado
+    planet_x = width // 2 + distance_from_star * math.cos(angle)
+    planet_y = height // 2 + distance_from_star * math.sin(angle)
+    planet = CelestialBody(planet_x, planet_y, 20, white)
+    initial_angular_speed = 0.5 * angular_speed_factor  # Ajuste conforme desejado
+    planet.velocity = [
+        initial_angular_speed * math.sin(angle),
+        -initial_angular_speed * math.cos(angle)
+    ]
+    celestial_bodies.append(planet)
 
 clock = pygame.time.Clock()
 dragging = False
