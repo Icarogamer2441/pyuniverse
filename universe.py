@@ -1,6 +1,7 @@
 import pygame
 import sys
 import math
+import pdb
 
 pygame.init()
 
@@ -20,12 +21,18 @@ black_hole_mass = 1000
 star_mass = 100  # Massa da estrela
 
 def calculate_gravity(obj1, obj2):
-    distance = max(1, math.hypot(obj2['x'] - obj1['x'], obj2['y'] - obj1['y']))
+    distance_x = obj2['x'] - obj1['x']
+    distance_y = obj2['y'] - obj1['y']
+    distance = max(1, math.hypot(distance_x, distance_y))
+    
     force = G * (obj1['mass'] * obj2['mass']) / (distance ** 2)
-    angle = math.atan2(obj2['y'] - obj1['y'], obj2['x'] - obj1['x'])
+    angle = math.atan2(distance_y, distance_x)
+    
     force_x = force * math.cos(angle)
     force_y = force * math.sin(angle)
+    
     return force_x, force_y
+
 
 class CelestialBody:
     def __init__(self, x, y, radius, color, mass=1):
@@ -42,8 +49,9 @@ class CelestialBody:
     def apply_force(self, force):
         acceleration_x = force[0] / self.mass
         acceleration_y = force[1] / self.mass
-        self.velocity[0] += acceleration_x
-        self.velocity[1] += acceleration_y
+        self.velocity[0] += acceleration_x / 5  # Dividido por 60 para suavizar o movimento
+        self.velocity[1] += acceleration_y / 5
+
 
     def update(self):
         self.x += self.velocity[0]
@@ -51,7 +59,8 @@ class CelestialBody:
 
     def increase_mass(self, amount):
         self.mass += amount
-    
+        self.radius = int(self.mass ** 0.4)  # Ajuste a potência conforme necessário para a escala desejada
+
     def merge(self, other_body):
         total_mass = self.mass + other_body.mass
         weighted_avg_velocity_x = (self.mass * self.velocity[0] + other_body.mass * other_body.velocity[0]) / total_mass
@@ -59,8 +68,12 @@ class CelestialBody:
 
         self.mass = total_mass
         self.velocity = [weighted_avg_velocity_x, weighted_avg_velocity_y]
-        self.mass += other_body.mass
-        self.radius += other_body.mass / 4
+        self.radius = int(self.radius + other_body.radius / 4)  # Ajuste no tamanho da estrela
+
+        # Apenas remova other_body se ele não for uma instância de BlackHole
+        if other_body.mass > self.mass:
+            celestial_bodies.remove(other_body)
+
 
 # Tela inicial
 font = pygame.font.Font(None, 24)
@@ -233,6 +246,6 @@ while True:
     if dragging:
         current_pos = pygame.mouse.get_pos()
         drag_force = (current_pos[0] - drag_start[0], current_pos[1] - drag_start[1])
-
+    
     pygame.display.flip()
     clock.tick(60)
